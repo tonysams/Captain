@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regatta Countdown</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="timer-container">
+        <h1>Regatta Start Sequence</h1>
+        <div id="countdownDisplay" class="display">5:00</div>
+        <div id="signalStatus" class="status"></div>
+        <div class="controls">
+            <select id="sequenceType">
+                <option value="5">5 Minute Sequence</option>
+                <option value="3">3 Minute Sequence</option>
+                </select>
+            <button id="startButton">Start Sequence</button>
+            <button id="stopButton">Stop/Reset</button>
+            <button id="soundHornButton">Manual Horn</button> </div>
+<div class="course-planner-container">
+    <h2>Basic Course Planner</h2>
+    <div>
+        <label for="windDirection">Head to Wind Direction (degrees, 0=N):</label>
+        <input type="number" id="windDirection" value="0" min="0" max="359">
+    </div>
+    <div>
+        <label for="legLength">Windward Leg Length (nautical miles):</label>
+        <input type="number" id="legLength" value="1.0" step="0.1">
+    </div>
+    <div>
+        <label for="startLineCenterLat">Start Line Center Latitude (for future use):</label>
+        <input type="text" id="startLineCenterLat" value="40.58"> </div>
+     <div>
+        <label for="startLineCenterLon">Start Line Center Longitude (for future use):</label>
+        <input type="text" id="startLineCenterLon" value="-111.40"> </div>
+    <button id="calculateCourseButton">Calculate Course Marks</button>
+    <div id="courseResult" class="status"></div>
+</div>
+<div class="gps-info-container">
+        <h2>GPS Status & Info</h2>
+        <button id="startGpsButton">Start GPS</button>
+        <button id="stopGpsButton">Stop GPS</button>
+        <div id="gpsStatus" class="status">GPS Inactive</div>
+        <div id="currentLat">Lat: ---</div>
+        <div id="currentLon">Lon: ---</div>
+        <div id="currentSpeed">SOG: ---</div>
+        <div id="currentCOG">COG: ---</div>
+    </div>
+
+    <div class="tacking-advisor-container">
+        <h2>Tacking Advisor (Sailor's Tool)</h2>
+        <div>
+            <label for="trueWindDirTacking">True Wind Direction (TWD°):</label>
+            <input type="number" id="trueWindDirTacking" placeholder="e.g., 180" value="0">
+        </div>
+        <div>
+            <label for="closeHauledAngle">Your Close-Hauled Angle (to TWD°):</label>
+            <input type="number" id="closeHauledAngle" placeholder="e.g., 45" value="45">
+        </div>
+        <div>
+            <label for="windwardMarkLat">Windward Mark Latitude:</label>
+            <input type="text" id="windwardMarkLat" placeholder="e.g., 40.585">
+        </div>
+        <div>
+            <label for="windwardMarkLon">Windward Mark Longitude:</label>
+            <input type="text" id="windwardMarkLon" placeholder="e.g., -111.405">
+        </div>
+        <button id="getAdviceButton">Get/Update Tacking Advice</button>
+        <div id="tackingAdviceDisplay" class="status">Enter TWD, Close-Hauled Angle, and Mark Coords, then Start GPS & Get Advice.</div>
+    </div>
+
+    ```
+
+**Key Changes and How It Works:**
+
+1.  **GPS Initialization:**
+    * `startGpsButton` and `stopGpsButton` are added to control the GPS.
+    * `startGpsWatch()` attempts to start `navigator.geolocation.watchPosition()`.
+    * `handlePositionUpdate()` is called by the browser whenever the iOS device's position changes. It updates global variables like `currentBoatPosition`, `currentBoatSpeedMPS`, and `currentBoatHeadingCOG`. It also updates the new display divs.
+    * `handlePositionError()` logs errors and updates the status.
+
+2.  **Tacking Advisor Section:**
+    * New input fields for the sailor: `trueWindDirTacking` (for the current TWD they observe/estimate), `closeHauledAngle` (their boat's typical performance), and `windwardMarkLat`/`windwardMarkLon` (coordinates of the next mark).
+    * `getAdviceButton`: When clicked, it takes the TWD and close-hauled angle, sets the `windwardMarkPosition`, activates the advisor, and calls `getTackingAdviceNow()`.
+    * `tackingAdvisorActive`: A flag to control if advice should be periodically updated.
+    * `getTackingAdviceNow()`:
+        * Now uses `currentBoatHeadingCOG` (from GPS) for the boat's heading.
+        * Still relies on the manually input `userTwd` (True Wind Direction from the sailor) and `userCloseHauledAngle`.
+        * **Crucially, the `calculateBearing()` and `calculateDistance()` functions are still placeholders.** You would need to implement these using the Haversine formula to work with actual latitude/longitude from the GPS and the mark coordinates. The `checkLaylines` function would also need significant rework to use these real positions.
+    * **Periodic Update:** I added a simple `setInterval` to re-calculate tacking advice every 5 seconds if GPS is active and the advisor is turned on. This is a basic way to make it somewhat dynamic; a better approach would be to trigger `getTackingAdviceNow()` directly from within `handlePositionUpdate()` once new GPS data arrives and the necessary conditions are met.
+
+**To Make This More Real (Next Steps Beyond This Draft):**
+
+1.  **Implement `calculateBearing(pos1, pos2)` and `calculateDistance(pos1, pos2)`:** These need to use formulas like Haversine to accurately work with latitude/longitude. There are many examples online you can adapt.
+2.  **Revamp `checkLaylines()`:** This function needs to be completely rewritten to use the boat's current position, the mark's position, the TWD, and the boat's close-hauled angle to determine if the boat is on or approaching a layline. This involves projecting lines from the mark.
+3.  **Improve TWD Input:** Constantly typing TWD is impractical. Future ideas:
+    * Allow quick adjustments (+/- 5 degrees buttons).
+    * Average TWD over a short period if the sailor can input it a few times.
+    * (Much more advanced) Interface with boat instruments if possible, or use sophisticated wind prediction.
+4.  **User Interface (UI) for Tacking Advice:** Instead of just text, a simple graphical display (even without a full map initially) showing your boat, wind direction, and an arrow suggesting "TACK" or "HOLD" would be much more intuitive on the water.
+5.  **State Management:** The `tackingAdvisorActive` flag is a simple start. A more robust app would have better state management.
+
+This combined file is getting quite comprehensive! It now has the race countdown timer, the RC's conceptual course planner, and the beginnings of a GPS-enabled tactical tacking advisor for the sailor.
+
+Remember to save this updated code into your `countdown.js` file, and update your `index.html` with the new divs and buttons for the GPS and tacking advisor sections. Then test it in your browser (you'll need to grant location permission when prompted).
+
+Let me know what you think, and where you'd like to steer next!
+    </div>
+
+    <audio id="warningSignal" src="sounds/warning_signal.mp3" preload="auto"></audio>
+    <audio id="preparatorySignal" src="sounds/preparatory_signal.mp3" preload="auto"></audio>
+    <audio id="oneMinuteSignal" src="sounds/one_minute_signal.mp3" preload="auto"></audio>
+    <audio id="startSignal" src="sounds/start_signal.mp3" preload="auto"></audio>
+    <audio id="manualHornSound" src="sounds/manual_horn.mp3" preload="auto"></audio>
+
+    <script src="countdown.js"></script>
+</body>
+</html>

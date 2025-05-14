@@ -1,0 +1,74 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f8ff; /* AliceBlue, like a calm sea */
+    margin: 0;
+    text-align: center;
+}
+
+.timer-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.display {
+    font-size: 6em; /* Nice and big! */
+    font-weight: bold;
+    color: #003366; /* Dark Navy */
+    margin: 20px 0;
+    padding: 10px;
+    border: 2px solid #003366;
+    border-radius: 5px;
+    background-color: #e6f7ff;
+}
+
+.status {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 20px;
+    min-height: 1.5em; /* Prevent layout shift */
+}
+
+.controls button, .controls select {
+    font-size: 1em;
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #4682b4; /* SteelBlue */
+    color: white;
+}
+
+.controls button:hover {
+    background-color: #315a7d;
+}
+.course-planner-container {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.course-planner-container div {
+    margin-bottom: 10px;
+}
+
+.course-planner-container label {
+    display: inline-block;
+    width: 250px; /* Adjust as needed */
+    margin-right: 10px;
+    text-align: right;
+}
+
+.course-planner-container input {
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
