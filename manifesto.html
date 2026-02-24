@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUMAN — Manifesto</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1714;
+    --paper: #f7f4ef;
+    --accent: #c4692a;
+    --muted: #7a6f65;
+    --warm-mid: #e8e0d4;
+    --rule: #d5cdc2;
+  }
+
+  html {
+    background: var(--ink);
+  }
+
+  body {
+    background: var(--paper);
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    max-width: 680px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* ─── Header ─── */
+  .masthead {
+    padding: 72px 64px 56px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+
+  .masthead-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 48px;
+  }
+
+  .wordmark {
+    font-family: 'Lora', serif;
+    font-size: 52px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+  }
+
+  /* The handmade imperfection — A tilted slightly */
+  .wordmark .special-a {
+    display: inline-block;
+    transform: rotate(-1.5deg) translateY(1px);
+    color: var(--accent);
+  }
+
+  .tagline-block {
+    text-align: right;
+    padding-top: 6px;
+  }
+
+  .tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+
+  .tagline strong {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .masthead-deck {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-style: italic;
+    font-weight: 400;
+    max-width: 480px;
+  }
+
+  /* ─── Body ─── */
+  .body {
+    padding: 56px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .stanza {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stanza-number {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .stanza-text {
+    font-family: 'Lora', serif;
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--ink);
+  }
+
+  .stanza-text em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .stanza-text strong {
+    font-weight: 600;
+  }
+
+  /* Pull quote */
+  .pull {
+    border-left: 3px solid var(--accent);
+    padding: 20px 28px;
+    background: #f0ebe3;
+    border-radius: 0 12px 12px 0;
+  }
+
+  .pull p {
+    font-family: 'Lora', serif;
+    font-size: 21px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  .pull p strong {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  /* Rule */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* Promise section */
+  .promise {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 48px 64px;
+  }
+
+  .promise-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .promise-line {
+    font-family: 'Lora', serif;
+    font-size: 28px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  .promise-line em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .promise-sub {
+    margin-top: 32px;
+    font-size: 13px;
+    color: #8a7f76;
+    line-height: 1.7;
+    font-style: italic;
+    font-family: 'Lora', serif;
+    max-width: 400px;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 40px 64px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-logo {
+    font-family: 'Lora', serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .footer-tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .footer-tagline strong {
+    color: var(--ink);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  /* Print */
+  @media print {
+    html { background: white; }
+    body { max-width: 100%; }
+    .promise { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .masthead { padding: 48px 32px 40px; }
+    .body { padding: 40px 32px; }
+    .promise { padding: 40px 32px; }
+    .footer { padding: 32px; flex-direction: column; gap: 12px; text-align: center; }
+    .wordmark { font-size: 40px; }
+    .masthead-top { flex-direction: column; gap: 20px; }
+    .tagline-block { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Masthead -->
+<div class="masthead">
+  <div class="masthead-top">
+    <div class="wordmark">HUM<span class="special-a">A</span>N</div>
+    <div class="tagline-block">
+      <div class="tagline"><strong>AI, for you.</strong></div>
+      <div class="tagline">Makes you smarterer.</div>
+    </div>
+  </div>
+  <p class="masthead-deck">
+    We believe intelligence isn't something you lack.<br>
+    It's something that hasn't been unlocked for you yet.
+  </p>
+</div>
+
+<!-- Body -->
+<div class="body">
+
+  <div class="stanza">
+    <div class="stanza-number">01 — The Problem</div>
+    <p class="stanza-text">
+      The web was built by people who already knew things,
+      for people they assumed knew things too.
+      <em>It was never built for the student at 11pm
+      with seventeen tabs open and no thread to pull.</em>
+      For the first-generation student. The working parent.
+      The person who thinks in stories, not systems.
+      The curious mind that just needed one good door in.
+    </p>
+  </div>
+
+  <div class="pull">
+    <p>The problem was never access to information.<br>
+    The problem was <strong>access to understanding.</strong></p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="stanza">
+    <div class="stanza-number">02 — What We See</div>
+    <p class="stanza-text">
+      We see a student sitting in a coffee shop.
+      Laptop open. An inbox full of things she doesn't understand.
+      A world moving faster than she can process.
+      That feeling — surrounded by information and
+      <em>completely alone in it.</em>
+    </p>
+    <p class="stanza-text">
+      And then something shifts.
+      Not a notification. Not an alert.
+      Just a presence. Like someone pulled up a chair and said —
+      <em>hey. what are you actually trying to figure out?</em>
+    </p>
+    <p class="stanza-text">
+      The noise doesn't disappear.
+      But suddenly there's a thread through it.
+      A narrative. A way in.
+      She closes the laptop a little later
+      feeling something she didn't expect.
+      Not just capable. <strong>Curious about tomorrow.</strong>
+    </p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="stanza">
+    <div class="stanza-number">03 — What We Built</div>
+    <p class="stanza-text">
+      HUMAN doesn't adapt to users.
+      It makes each person the <em>designer of their own understanding.</em>
+      Your curiosity lives in different places than mine.
+      Your way into a subject, your pace, your language, your story —
+      nobody else has that exact combination.
+    </p>
+    <p class="stanza-text">
+      Every person who opens HUMAN gets something
+      that has never existed before and will never exist again —
+      <strong>an intelligence shaped exactly to their mind.</strong>
+    </p>
+    <p class="stanza-text">
+      That's not a feature. That's a philosophy.
+    </p>
+  </div>
+
+  <div class="pull">
+    <p>Not AI performing.<br>
+    Not AI impressing.<br>
+    Not AI replacing.<br>
+    <strong>AI. For you.</strong></p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="stanza">
+    <div class="stanza-number">04 — The Arc</div>
+    <p class="stanza-text">
+      We believe every person moves through four stages —
+      <em>and most are stuck at the first.</em>
+    </p>
+    <p class="stanza-text">
+      <strong>Access:</strong> Getting in the door. Understanding the words.<br>
+      <strong>Adapt:</strong> Finding your way in. Making it yours.<br>
+      <strong>Empower:</strong> Building confidence. Trusting your own mind.<br>
+      <strong>Become:</strong> Owning your growth. Curious about what's next.
+    </p>
+    <p class="stanza-text">
+      HUMAN meets you where you are.
+      Walks with you through all four.
+      <em>And gets out of the way when you don't need it anymore.</em>
+      That's what good education does.
+      That's what HUMAN does.
+    </p>
+  </div>
+
+</div>
+
+<!-- Promise -->
+<div class="promise">
+  <div class="promise-label">The Promise</div>
+  <p class="promise-line">
+    You are not behind.<br>
+    You are not broken.<br>
+    You were just waiting for something<br>
+    <em>built for you.</em>
+  </p>
+  <p class="promise-sub">
+    "The web wasn't built for all of us.
+    HUMAN changes that."
+  </p>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-logo">HUM<span style="color:var(--accent)">A</span>N</div>
+  <div class="footer-tagline"><strong>AI, for you.</strong> Makes you smarterer.</div>
+</div>
+
+</body>
+</html>
