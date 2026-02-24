@@ -8,17 +8,17 @@ enum APIError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .missingAPIKey:       return "Anthropic API key not found in Config.plist"
-        case .badHTTPStatus(let c): return "API returned HTTP \(c)"
-        case .noContent:           return "API response contained no text content"
-        case .decodingFailed(let m): return "Could not decode response: \(m)"
+        case .missingAPIKey:        return "API key not found in Config.plist"
+        case .badHTTPStatus(let c): return "API error (HTTP \(c))"
+        case .noContent:            return "API response contained no content"
+        case .decodingFailed(let m): return "Couldn't parse response: \(m)"
         }
     }
 }
 
 struct ClaudeAPIService {
 
-    // MARK: — System prompt — instructs Claude to return raw JSON only
+    // MARK: — System prompt
     private static let systemPrompt = """
     You are HUMAN, an AI that helps people understand complex content. \
     Your job is to make the confusing clear, the dense accessible, \
@@ -26,7 +26,7 @@ struct ClaudeAPIService {
 
     Given any user input — a question, confusing text, a concept, or anything \
     they're trying to figure out — respond ONLY with a valid JSON object. \
-    No markdown fences. No preamble. No explanation outside the JSON.
+    Do NOT wrap the JSON in markdown code fences. No preamble. No explanation outside the JSON.
 
     The JSON must have exactly these keys:
     {
@@ -55,17 +55,15 @@ struct ClaudeAPIService {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("application/json",  forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey,              forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01",        forHTTPHeaderField: "anthropic-version")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey,             forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01",       forHTTPHeaderField: "anthropic-version")
 
         let body: [String: Any] = [
-            "model": "claude-opus-4-5",
+            "model": "claude-3-5-sonnet-20241022",
             "max_tokens": 1024,
             "system": systemPrompt,
-            "messages": [
-                ["role": "user", "content": userInput]
-            ]
+            "messages": [["role": "user", "content": userInput]]
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
@@ -75,14 +73,18 @@ struct ClaudeAPIService {
             throw APIError.badHTTPStatus(0)
         }
         guard http.statusCode == 200 else {
+            let raw = String(data: data, encoding: .utf8) ?? "(unreadable)"
+            print("HUMAN ERROR HTTP \(http.statusCode): \(raw)")
             throw APIError.badHTTPStatus(http.statusCode)
         }
 
-        // Parse outer envelope
+        // Parse outer Anthropic envelope
         let envelope: AnthropicAPIResponse
         do {
             envelope = try JSONDecoder().decode(AnthropicAPIResponse.self, from: data)
         } catch {
+            let raw = String(data: data, encoding: .utf8) ?? "(unreadable)"
+            print("HUMAN ERROR envelope decode: \(error) Raw: \(raw)")
             throw APIError.decodingFailed("envelope: \(error.localizedDescription)")
         }
 
@@ -90,15 +92,29 @@ struct ClaudeAPIService {
             throw APIError.noContent
         }
 
-        // Parse inner JSON string that Claude produced
-        guard let innerData = textBlock.text.data(using: .utf8) else {
+        // Strip markdown code fences if Claude wrapped the JSON despite instructions
+        var jsonText = textBlock.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("HUMAN raw Claude text: \(jsonText)")
+
+        if jsonText.hasPrefix("```") {
+            if let newline = jsonText.firstIndex(of: "\n") {
+                jsonText = String(jsonText[jsonText.index(after: newline)...])
+            }
+            if jsonText.hasSuffix("```") {
+                jsonText = String(jsonText.dropLast(3))
+            }
+            jsonText = jsonText.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        guard let innerData = jsonText.data(using: .utf8) else {
             throw APIError.noContent
         }
 
         do {
             return try JSONDecoder().decode(ClaudeResponse.self, from: innerData)
         } catch {
-            throw APIError.decodingFailed("inner: \(error.localizedDescription)\nRaw: \(textBlock.text)")
+            print("HUMAN ERROR inner JSON decode: \(error) JSON: \(jsonText)")
+            throw APIError.decodingFailed("parse: \(error.localizedDescription)")
         }
     }
 
