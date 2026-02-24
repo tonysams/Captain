@@ -1,0 +1,16 @@
+# API key — never commit this
+HumanApp/Config/Config.plist
+
+# Xcode build artifacts
+build/
+DerivedData/
+*.xcuserdata/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+
+# Xcode user-specific settings
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+
+# macOS
+.DS_Store
