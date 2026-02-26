@@ -1,0 +1,15 @@
+# Generated pipeline outputs — do not commit
+output/clean/*.txt
+output/clean/cleaning_report.md
+output/charts/*.png
+output/insights/anomalies.json
+output/insights/themes.json
+output/insights/insights.md
+output/report/final_report.md
+output/manifest.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python

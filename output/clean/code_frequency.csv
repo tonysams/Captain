@@ -1,0 +1,34 @@
+code,domain,diya,jeb,logan,nicholas,total
+POS-SHIFT,Positionality,2,1,0,1,4
+POS-AGENCY,Positionality,1,2,0,0,3
+POS-RESPONSIBILITY,Positionality,1,0,0,0,1
+POS-CURATION,Positionality,0,0,1,0,1
+HEARD-ATTENTION,Being Heard,1,1,0,0,2
+HEARD-RESPONSE,Being Heard,0,0,1,0,1
+HEARD-VALIDATION,Being Heard,1,1,0,1,3
+HEARD-PROXIMITY,Being Heard,0,1,0,0,1
+HEARD-INFLUENCE,Being Heard,1,0,0,0,1
+SENSE-PERSONAL,Sensemaking,2,0,0,1,3
+SENSE-PEER,Sensemaking,0,1,0,2,3
+SENSE-TECHNICAL,Sensemaking,0,1,1,0,2
+SENSE-NONE,Sensemaking,0,0,3,0,3
+DESIGN-INVERSION,Design Critique,0,1,0,1,2
+DESIGN-ACCESSIBILITY,Design Critique,0,0,0,1,1
+DESIGN-AUTHENTICITY,Design Critique,2,0,0,0,2
+DESIGN-FUTURE-STAKE,Design Critique,0,3,1,0,4
+DESIGN-BLIND-SPOTS,Design Critique,0,1,2,0,3
+INST-CONSTRAINT,Institutional Dynamics,1,0,0,0,1
+INST-PERMISSION,Institutional Dynamics,1,0,2,0,3
+INST-CHANGE,Institutional Dynamics,1,0,0,0,1
+INST-LEGACY,Institutional Dynamics,1,0,0,0,1
+CROSS-DISCIPLINE,Cross-Disciplinary,1,1,0,0,2
+CROSS-SENTIMENT,Cross-Disciplinary,0,0,2,0,2
+CROSS-INSIGHT,Cross-Disciplinary,1,0,0,0,1
+CRED-CAREER,Credential,0,0,0,2,2
+CRED-CONTINUATION,Credential,2,2,1,0,5
+CRED-MEANING,Credential,2,0,0,0,2
+CRED-IDENTITY,Credential,1,0,0,1,2
+IMPROV-OUTREACH,Improvement,0,1,0,1,2
+IMPROV-TIME,Improvement,0,1,0,1,2
+IMPROV-STRUCTURE,Improvement,1,1,0,1,3
+IMPROV-FOLLOWUP,Improvement,1,0,0,0,1
