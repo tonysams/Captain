@@ -11,6 +11,7 @@ final class AppViewModel: ObservableObject {
     @Published var hasCompletedOnboarding: Bool = false
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var currentUser: AuthService.UserInfo?
 
     private let onboardingKey = "has_completed_onboarding"
     private let auth = AuthService.shared
@@ -18,11 +19,13 @@ final class AppViewModel: ObservableObject {
     init() {
         hasCompletedOnboarding = UserDefaults.standard.bool(forKey: onboardingKey)
         // Mirror auth service state
-        isAuthenticated = auth.isAuthenticated
+        isAuthenticated   = auth.isAuthenticated
+        currentUser       = auth.currentUser
         // Keep in sync as auth state changes
         Task {
             for await _ in NotificationCenter.default.notifications(named: .authStateChanged) {
                 self.isAuthenticated = auth.isAuthenticated
+                self.currentUser     = auth.currentUser
             }
         }
     }
@@ -35,6 +38,7 @@ final class AppViewModel: ObservableObject {
         do {
             try await auth.signIn(email: email, password: password)
             isAuthenticated = true
+            currentUser     = auth.currentUser
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -47,6 +51,7 @@ final class AppViewModel: ObservableObject {
         do {
             try await auth.signUp(email: email, password: password)
             isAuthenticated = true
+            currentUser     = auth.currentUser
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -56,6 +61,7 @@ final class AppViewModel: ObservableObject {
     func signOut() {
         auth.signOut()
         isAuthenticated = false
+        currentUser     = nil
     }
 
     // MARK: - Onboarding
