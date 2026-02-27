@@ -12,6 +12,29 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
 
+                    // Guest mode banner
+                    if appVM.isGuestMode {
+                        HStack(spacing: 10) {
+                            Image(systemName: "person.crop.circle.badge.questionmark")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppColors.warning)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Guest Mode")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(AppColors.textPrimary)
+                                Text("Session data is stored locally only. Sign in to sync and access AI coaching.")
+                                    .font(.caption)
+                                    .foregroundColor(AppColors.textMuted)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(14)
+                        .background(AppColors.warning.opacity(0.1))
+                        .cornerRadius(14)
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppColors.warning.opacity(0.3), lineWidth: 1))
+                        .padding(.horizontal, 20)
+                    }
+
                     // Profile card
                     VStack(alignment: .leading, spacing: 12) {
                         Text("INSTRUCTOR")
@@ -29,10 +52,10 @@ struct SettingsView: View {
                                     .foregroundColor(AppColors.primary)
                             }
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(appVM.currentUser?.email ?? "—")
+                                Text(appVM.isGuestMode ? "Guest" : (appVM.currentUser?.email ?? "—"))
                                     .font(.system(size: 15, weight: .semibold))
                                     .foregroundColor(AppColors.textPrimary)
-                                Text("Instructor")
+                                Text(appVM.isGuestMode ? "Not signed in" : "Instructor")
                                     .font(.caption)
                                     .foregroundColor(AppColors.textMuted)
                             }

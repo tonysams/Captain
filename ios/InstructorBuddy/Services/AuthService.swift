@@ -13,6 +13,9 @@ final class AuthService: ObservableObject {
     @Published var currentUser: UserInfo?
     @Published var isLoading = false
 
+    /// Set to true by AppViewModel.continueAsGuest() — skips all Supabase calls.
+    var isGuestMode: Bool = false
+
     private let keychainKey = "com.instructorbuddy.access_token"
     private let refreshKey  = "com.instructorbuddy.refresh_token"
 
@@ -107,6 +110,7 @@ final class AuthService: ObservableObject {
     // MARK: - Token refresh
 
     func refreshIfNeeded() async throws -> String {
+        if isGuestMode { return "" }   // guest mode — no token needed
         guard let token = accessToken else { throw AuthError.notAuthenticated }
         // Attempt to decode expiry from JWT payload
         if !isExpired(jwt: token) { return token }

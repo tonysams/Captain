@@ -12,6 +12,7 @@ final class AppViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var currentUser: AuthService.UserInfo?
+    @Published var isGuestMode: Bool = false
 
     private let onboardingKey = "has_completed_onboarding"
     private let auth = AuthService.shared
@@ -62,6 +63,15 @@ final class AppViewModel: ObservableObject {
         auth.signOut()
         isAuthenticated = false
         currentUser     = nil
+        isGuestMode     = false
+        auth.isGuestMode = false
+    }
+
+    func continueAsGuest() {
+        auth.isGuestMode    = true
+        isGuestMode         = true
+        isAuthenticated     = true
+        completeOnboarding()
     }
 
     // MARK: - Onboarding

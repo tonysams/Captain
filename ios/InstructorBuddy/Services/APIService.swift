@@ -98,7 +98,9 @@ final class APIService {
         var req = URLRequest(url: url)
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if !token.isEmpty {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         req.timeoutInterval = 60
 
         if let b = body {
@@ -114,7 +116,10 @@ final class APIService {
         }
 
         if http.statusCode == 401 {
-            await AuthService.shared.signOut()
+            // In guest mode a 401 is expected — don't sign out, just surface the error.
+            if !AuthService.shared.isGuestMode {
+                await AuthService.shared.signOut()
+            }
             throw APIError.unauthorized
         }
 

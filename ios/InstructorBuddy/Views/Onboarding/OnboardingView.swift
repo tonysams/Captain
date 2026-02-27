@@ -72,6 +72,15 @@ struct OnboardingView: View {
                                 .font(.footnote)
                                 .foregroundColor(AppColors.primary)
                         }
+
+                        Button {
+                            appVM.continueAsGuest()
+                        } label: {
+                            Text("Continue without account")
+                                .font(.footnote)
+                                .foregroundColor(AppColors.textMuted)
+                        }
+                        .padding(.top, 4)
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 48)
