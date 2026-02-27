@@ -116,8 +116,10 @@ final class APIService {
         }
 
         if http.statusCode == 401 {
-            // In guest mode a 401 is expected — don't sign out, just surface the error.
-            if !AuthService.shared.isGuestMode {
+            // If the request carried no Authorization header we're in guest mode —
+            // don't sign out, just surface the error. Avoids touching @MainActor state.
+            let hasAuth = request.value(forHTTPHeaderField: "Authorization") != nil
+            if hasAuth {
                 await AuthService.shared.signOut()
             }
             throw APIError.unauthorized
