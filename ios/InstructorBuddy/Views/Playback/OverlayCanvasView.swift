@@ -69,8 +69,6 @@ struct OverlayCanvasView: View {
 
         // Degree label
         if let deg = overlay.value {
-            let text = GraphicsContext.ResolvedText(shading: .color(color))
-            _ = text // suppress warning — draw text via drawText helper below
             drawFloatingLabel(ctx, at: ptMid, text: String(format: "%.0f°", deg), color: color)
         }
     }
