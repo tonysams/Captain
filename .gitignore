@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# iOS / Xcode
+ios/InstructorBuddy.xcodeproj/
+ios/InstructorBuddy.xcworkspace/
+DerivedData/
+*.xcuserstate
+*.xcscheme
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.xcconfig
+
+# Build outputs
+build/
+*.js.map
+
+# Claude Code internals
+.claude/
+memory/
