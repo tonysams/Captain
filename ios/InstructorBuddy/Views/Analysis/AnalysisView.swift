@@ -14,6 +14,7 @@ struct AnalysisView: View {
     @State private var processedFrames: Int = 0
     @State private var errorMessage: String?
     @State private var navigateToPlayback = false
+    @State private var isPulsing = false
 
     enum Stage: Int, CaseIterable {
         case extracting = 0
@@ -56,7 +57,18 @@ struct AnalysisView: View {
                         Image(systemName: stage.icon)
                             .font(.system(size: 48, weight: .medium))
                             .foregroundColor(AppColors.primary)
-                            .symbolEffect(.pulse, options: .repeating, isActive: stage != .done)
+                            .scaleEffect(isPulsing ? 1.12 : 1.0)
+                            .opacity(isPulsing ? 1.0 : 0.6)
+                            .animation(
+                                stage != .done
+                                    ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true)
+                                    : .default,
+                                value: isPulsing
+                            )
+                    }
+                    .onAppear { isPulsing = true }
+                    .onChange(of: stage) { newStage in
+                        isPulsing = newStage != .done
                     }
 
                     // Stage label
