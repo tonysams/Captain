@@ -6,6 +6,8 @@ struct SettingsView: View {
     @State private var analytics: CostAnalytics?
     @State private var isLoading = false
     @State private var psiaLevel = PSIALevel.level3
+    @State private var apiKeyInput: String = ""
+    @State private var apiKeySaved = false
 
     var body: some View {
         NavigationStack {
@@ -67,6 +69,57 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 20)
 
+                    // Anthropic API key
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("ANTHROPIC API KEY")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(AppColors.textMuted)
+                                .tracking(1.5)
+                            Spacer()
+                            if ClaudeService.shared.hasAPIKey {
+                                Label("Saved", systemImage: "checkmark.circle.fill")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(AppColors.success)
+                            }
+                        }
+
+                        HStack(spacing: 10) {
+                            SecureField(
+                                ClaudeService.shared.hasAPIKey ? "sk-ant-••••••••" : "sk-ant-api03-…",
+                                text: $apiKeyInput
+                            )
+                            .autocapitalization(.none)
+                            .autocorrectionDisabled()
+                            .padding(.horizontal, 14)
+                            .frame(height: 46)
+                            .background(AppColors.bgCard)
+                            .cornerRadius(12)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border, lineWidth: 1))
+
+                            Button {
+                                ClaudeService.shared.apiKey = apiKeyInput.trimmingCharacters(in: .whitespaces)
+                                apiKeyInput = ""
+                                apiKeySaved = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) { apiKeySaved = false }
+                            } label: {
+                                Text(apiKeySaved ? "Saved!" : "Save")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 16)
+                                    .frame(height: 46)
+                                    .background(apiKeySaved ? AppColors.success : AppColors.primary)
+                                    .cornerRadius(12)
+                            }
+                            .disabled(apiKeyInput.trimmingCharacters(in: .whitespaces).isEmpty)
+                        }
+
+                        Text("Get your key at console.anthropic.com. Stored securely in the iOS Keychain — never leaves your device.")
+                            .font(.caption)
+                            .foregroundColor(AppColors.textMuted)
+                    }
+                    .padding(.horizontal, 20)
+
                     // PSIA Level
                     VStack(alignment: .leading, spacing: 10) {
                         Text("PSIA CERTIFICATION")
@@ -82,32 +135,7 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 20)
 
-                    // 30-day cost dashboard
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("AI USAGE (30 DAYS)")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(AppColors.textMuted)
-                            .tracking(1.5)
-
-                        if isLoading {
-                            ProgressView().tint(AppColors.primary)
-                                .frame(maxWidth: .infinity)
-                        } else if let a = analytics {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                                CostStatBox(label: "Total Cost", value: String(format: "$%.2f", a.totalCost))
-                                CostStatBox(label: "Sessions",   value: "\(a.totalSessions)")
-                                CostStatBox(label: "Frames",     value: "\(a.totalFramesAnalyzed)")
-                                CostStatBox(label: "Avg / Session", value: String(format: "$%.3f", a.averageCostPerSession))
-                            }
-                        } else {
-                            Text("Unable to load analytics.")
-                                .font(.footnote)
-                                .foregroundColor(AppColors.textMuted)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-
-                    // Sign out
+                    // Sign out / reset
                     Button(role: .destructive) {
                         appVM.signOut()
                     } label: {
@@ -126,36 +154,6 @@ struct SettingsView: View {
             }
             .background(AppColors.bg.ignoresSafeArea())
             .navigationTitle("Settings")
-            .onAppear { loadAnalytics() }
         }
-    }
-
-    private func loadAnalytics() {
-        isLoading = true
-        Task {
-            analytics = try? await APIService.shared.getCostAnalytics()
-            isLoading = false
-        }
-    }
-}
-
-private struct CostStatBox: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(AppColors.textPrimary)
-            Text(label)
-                .font(.system(size: 11))
-                .foregroundColor(AppColors.textMuted)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .background(AppColors.bgCard)
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border, lineWidth: 1))
     }
 }

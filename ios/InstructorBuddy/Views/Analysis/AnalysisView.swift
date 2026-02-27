@@ -178,15 +178,18 @@ struct AnalysisView: View {
             progress = 1.0
             try? await Task.sleep(nanoseconds: 400_000_000)
 
-            // Stage 3 — upload frames to backend (AI analysis)
+            // Stage 3 — call Claude API directly (no backend required)
             stage    = .analysing
             progress = 0
             processedFrames = 0
 
+            let focusArea  = sessionVM.currentSession?.focusArea  ?? .overall
+            let skillLevel = sessionVM.currentSession?.skillLevel ?? .intermediate
+
             for (i, extracted) in extractedFrames.enumerated() {
                 // Build AnalyzedFrame stub
-                let frameId  = "\(sessionId)_frame_\(i)"
-                let stub     = AnalyzedFrame(
+                let frameId = "\(sessionId)_frame_\(i)"
+                let stub = AnalyzedFrame(
                     id:            frameId,
                     sessionId:     sessionId,
                     frameIndex:    extracted.index,
@@ -199,30 +202,29 @@ struct AnalysisView: View {
                 )
                 sessionVM.addFrame(stub)
 
-                // Compress image and upload
+                // Compress + call Claude directly
                 if let base64 = ImageCompressor.compress(extracted.image) {
-                    let req = UploadFrameRequest(
-                        frameIndex:    extracted.index,
-                        timestamp:     extracted.timestamp,
-                        imageBase64:   base64,
-                        poseKeypoints: extracted.keypoints,
-                        context:       FrameContext(
-                            focusArea:   sessionVM.currentSession?.focusArea.rawValue ?? "overall",
-                            skillLevel:  sessionVM.currentSession?.skillLevel.rawValue ?? "intermediate",
+                    do {
+                        let coaching = try await ClaudeService.shared.analyzeFrame(
+                            imageBase64: base64,
+                            keypoints:   extracted.keypoints,
+                            focusArea:   focusArea,
+                            skillLevel:  skillLevel,
+                            frameIndex:  i,
                             totalFrames: extractedFrames.count
                         )
-                    )
-
-                    do {
-                        let response = try await APIService.shared.uploadFrame(req, sessionId: sessionId)
                         sessionVM.updateFrameCoaching(
                             frameId:  frameId,
-                            coaching: response.analysisResult,
-                            overlays: response.overlays
+                            coaching: coaching,
+                            overlays: coaching.overlays
                         )
+                    } catch ClaudeError.noAPIKey {
+                        // Surface the "add your key" error and stop
+                        errorMessage = ClaudeError.noAPIKey.errorDescription
+                        return
                     } catch {
-                        // Queue offline, keep going
-                        OfflineQueueService.shared.enqueue(sessionId: sessionId, request: req)
+                        // Non-fatal (network blip, parse error) — leave frame without coaching
+                        print("[Claude] frame \(i) error: \(error.localizedDescription)")
                     }
                 }
 
