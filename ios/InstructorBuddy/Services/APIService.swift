@@ -120,7 +120,7 @@ final class APIService {
             // don't sign out, just surface the error. Avoids touching @MainActor state.
             let hasAuth = request.value(forHTTPHeaderField: "Authorization") != nil
             if hasAuth {
-                await AuthService.shared.signOut()
+                await MainActor.run { AuthService.shared.signOut() }
             }
             throw APIError.unauthorized
         }
