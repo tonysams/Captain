@@ -83,7 +83,7 @@ struct OverlayCanvasView: View {
               let ptA = kpMap[overlay.landmarks[0]],
               let ptB = kpMap[overlay.landmarks[1]] else { return }
 
-        let dash: [CGFloat] = overlay.dashPattern.map { $0.map { CGFloat($0) } } ?? [8, 4]
+        let dash: [CGFloat] = overlay.dashPattern?.map { CGFloat($0) } ?? [8, 4]
         var path = Path()
         path.move(to: ptA)
         path.addLine(to: ptB)

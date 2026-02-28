@@ -3,9 +3,6 @@ import SwiftUI
 struct SettingsView: View {
 
     @EnvironmentObject private var appVM: AppViewModel
-    @State private var analytics: CostAnalytics?
-    @State private var isLoading = false
-    @State private var psiaLevel = PSIALevel.level3
     @State private var apiKeyInput: String = ""
     @State private var apiKeySaved = false
 
@@ -117,21 +114,6 @@ struct SettingsView: View {
                         Text("Get your key at console.anthropic.com. Stored securely in the iOS Keychain — never leaves your device.")
                             .font(.caption)
                             .foregroundColor(AppColors.textMuted)
-                    }
-                    .padding(.horizontal, 20)
-
-                    // PSIA Level
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("PSIA CERTIFICATION")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(AppColors.textMuted)
-                            .tracking(1.5)
-
-                        ChipRow(
-                            items: PSIALevel.allCases,
-                            selection: $psiaLevel,
-                            labelFor: \.label
-                        )
                     }
                     .padding(.horizontal, 20)
 

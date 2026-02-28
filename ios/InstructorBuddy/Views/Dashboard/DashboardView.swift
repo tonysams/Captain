@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
 
     @EnvironmentObject private var sessionVM: SessionViewModel
+    @EnvironmentObject private var studentsVM: StudentsViewModel
     @State private var navigateToCapture = false
 
     var body: some View {
@@ -75,7 +76,7 @@ struct DashboardView: View {
             .navigationDestination(isPresented: $navigateToCapture) {
                 CaptureView()
                     .environmentObject(sessionVM)
-                    .environmentObject(StudentsViewModel())
+                    .environmentObject(studentsVM)
             }
             .onAppear {
                 Task { await sessionVM.loadSessions() }
