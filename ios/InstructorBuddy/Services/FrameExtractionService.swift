@@ -64,12 +64,12 @@ final class FrameExtractionService {
         return Array(keyFrames)
     }
 
-    // MARK: - Private: AVAssetImageGenerator
+    // MARK: - Private: AVAssetImageGenerator (sequential, no @Sendable closures)
 
     private func extractRawFrames(url: URL, fps: Double) async throws -> [ExtractedFrame] {
-        let asset     = AVURLAsset(url: url)
-        let duration  = try await asset.load(.duration)
-        let seconds   = CMTimeGetSeconds(duration)
+        let asset    = AVURLAsset(url: url)
+        let duration = try await asset.load(.duration)
+        let seconds  = CMTimeGetSeconds(duration)
         guard seconds > 0 else { return [] }
 
         let generator = AVAssetImageGenerator(asset: asset)
@@ -77,39 +77,28 @@ final class FrameExtractionService {
         generator.requestedTimeToleranceBefore   = CMTime(seconds: 0.1, preferredTimescale: 600)
         generator.requestedTimeToleranceAfter    = CMTime(seconds: 0.1, preferredTimescale: 600)
 
-        // Build time array at `fps` intervals
-        let interval   = 1.0 / fps
-        var times: [NSValue] = []
+        // Build timestamp list
+        let interval = 1.0 / fps
+        var timestamps: [Double] = []
         var t = 0.0
         while t < seconds {
-            times.append(NSValue(time: CMTime(seconds: t, preferredTimescale: 600)))
+            timestamps.append(t)
             t += interval
         }
 
-        // Batch generate
+        // Extract frames one-by-one — avoids @Sendable / Sendable conformance issues
+        // that arise with generateCGImagesAsynchronously's concurrent callback.
         var frames: [ExtractedFrame] = []
-        return try await withCheckedThrowingContinuation { continuation in
-            var completed = 0
-            generator.generateCGImagesAsynchronously(forTimes: times) { requestedTime, cgImage, _, result, error in
-                defer {
-                    completed += 1
-                    if completed == times.count {
-                        let sorted = frames.sorted { $0.timestamp < $1.timestamp }
-                        continuation.resume(returning: sorted)
-                    }
-                }
-                if result == .succeeded, let img = cgImage {
-                    let ts = CMTimeGetSeconds(requestedTime)
-                    frames.append(ExtractedFrame(
-                        index:     frames.count,
-                        timestamp: ts,
-                        image:     img
-                    ))
-                } else if let err = error {
-                    // Log but don't fail — some frames may be unreadable
-                    print("[FrameExtraction] frame at \(CMTimeGetSeconds(requestedTime))s error: \(err)")
-                }
+        for (index, ts) in timestamps.enumerated() {
+            let cmTime = CMTime(seconds: ts, preferredTimescale: 600)
+            do {
+                let cgImage = try generator.copyCGImage(at: cmTime, actualTime: nil)
+                frames.append(ExtractedFrame(index: index, timestamp: ts, image: cgImage))
+            } catch {
+                // Unreadable frame — skip and continue
+                print("[FrameExtraction] skipping frame at \(String(format: "%.2f", ts))s: \(error.localizedDescription)")
             }
         }
+        return frames
     }
 }
