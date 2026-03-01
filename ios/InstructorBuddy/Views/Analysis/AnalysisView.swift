@@ -145,6 +145,7 @@ struct AnalysisView: View {
 
     // MARK: - Pipeline
 
+    @MainActor
     private func runPipeline() {
         Task { @MainActor in
             guard let localVideoURI = sessionVM.currentSession?.localVideoUrl,
