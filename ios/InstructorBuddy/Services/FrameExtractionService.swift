@@ -18,7 +18,7 @@ struct ExtractedFrame {
 // scores them using the same algorithm as the React Native app,
 // and returns the top N key frames sorted by timestamp.
 
-final class FrameExtractionService {
+final class FrameExtractionService: @unchecked Sendable {
 
     // MARK: - Public entry point
 

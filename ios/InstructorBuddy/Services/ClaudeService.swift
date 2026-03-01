@@ -5,7 +5,7 @@ import Security
 // Calls api.anthropic.com directly from the device — no backend required.
 // The API key is stored in the iOS Keychain.
 
-final class ClaudeService {
+final class ClaudeService: @unchecked Sendable {
 
     static let shared = ClaudeService()
     private init() {}
