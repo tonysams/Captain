@@ -146,7 +146,7 @@ struct AnalysisView: View {
     // MARK: - Pipeline
 
     private func runPipeline() {
-        Task {
+        Task { @MainActor in
             guard let localVideoURI = sessionVM.currentSession?.localVideoUrl,
                   let videoURL = URL(string: localVideoURI) else {
                 errorMessage = "No video available to analyse."
