@@ -220,7 +220,7 @@ struct AnalysisView: View {
                         )
                     } catch ClaudeError.noAPIKey {
                         // Surface the "add your key" error and stop
-                        errorMessage = ClaudeError.noAPIKey.errorDescription
+                        errorMessage = error.localizedDescription
                         return
                     } catch {
                         // Non-fatal (network blip, parse error) — leave frame without coaching
