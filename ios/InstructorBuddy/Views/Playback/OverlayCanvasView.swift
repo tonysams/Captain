@@ -16,11 +16,11 @@ struct OverlayCanvasView: View {
 
             for overlay in overlays where visibility[overlay.type] {
                 switch overlay.type {
-                case .angle:  drawAngle(context,  size: size, overlay: overlay, kpMap: kpMap)
-                case .line:   drawLine(context,   size: size, overlay: overlay, kpMap: kpMap)
-                case .arrow:  drawArrow(context,  size: size, overlay: overlay, kpMap: kpMap)
-                case .circle: drawCircle(context, size: size, overlay: overlay, kpMap: kpMap)
-                case .text:   drawText(context,   size: size, overlay: overlay, kpMap: kpMap)
+                case .angle:  drawAngle(&context,  size: size, overlay: overlay, kpMap: kpMap)
+                case .line:   drawLine(&context,   size: size, overlay: overlay, kpMap: kpMap)
+                case .arrow:  drawArrow(&context,  size: size, overlay: overlay, kpMap: kpMap)
+                case .circle: drawCircle(&context, size: size, overlay: overlay, kpMap: kpMap)
+                case .text:   drawText(&context,   size: size, overlay: overlay, kpMap: kpMap)
                 }
             }
         }
@@ -40,7 +40,7 @@ struct OverlayCanvasView: View {
     // MARK: - Angle overlay (arc between 3 landmarks)
 
     private func drawAngle(
-        _ ctx: GraphicsContext, size: CGSize,
+        _ ctx: inout GraphicsContext, size: CGSize,
         overlay: Overlay, kpMap: [Int: CGPoint]
     ) {
         guard overlay.landmarks.count >= 3,
@@ -69,14 +69,14 @@ struct OverlayCanvasView: View {
 
         // Degree label
         if let deg = overlay.value {
-            drawFloatingLabel(ctx, at: ptMid, text: String(format: "%.0f°", deg), color: color)
+            drawFloatingLabel(&ctx, at: ptMid, text: String(format: "%.0f°", deg), color: color)
         }
     }
 
     // MARK: - Line overlay (dashed alignment)
 
     private func drawLine(
-        _ ctx: GraphicsContext, size: CGSize,
+        _ ctx: inout GraphicsContext, size: CGSize,
         overlay: Overlay, kpMap: [Int: CGPoint]
     ) {
         guard overlay.landmarks.count >= 2,
@@ -92,14 +92,14 @@ struct OverlayCanvasView: View {
 
         if let label = overlay.label {
             let mid = CGPoint(x: (ptA.x + ptB.x) / 2, y: (ptA.y + ptB.y) / 2)
-            drawFloatingLabel(ctx, at: mid, text: label, color: overlay.swiftUIColor)
+            drawFloatingLabel(&ctx, at: mid, text: label, color: overlay.swiftUIColor)
         }
     }
 
     // MARK: - Arrow overlay
 
     private func drawArrow(
-        _ ctx: GraphicsContext, size: CGSize,
+        _ ctx: inout GraphicsContext, size: CGSize,
         overlay: Overlay, kpMap: [Int: CGPoint]
     ) {
         guard overlay.landmarks.count >= 2,
@@ -133,14 +133,14 @@ struct OverlayCanvasView: View {
 
         if let label = overlay.label {
             let mid = CGPoint(x: (tail.x + head.x) / 2, y: (tail.y + head.y) / 2)
-            drawFloatingLabel(ctx, at: mid, text: label, color: color)
+            drawFloatingLabel(&ctx, at: mid, text: label, color: color)
         }
     }
 
     // MARK: - Circle overlay (joint highlight)
 
     private func drawCircle(
-        _ ctx: GraphicsContext, size: CGSize,
+        _ ctx: inout GraphicsContext, size: CGSize,
         overlay: Overlay, kpMap: [Int: CGPoint]
     ) {
         guard let centre = kpMap[overlay.landmarks.first ?? -1] else { return }
@@ -155,24 +155,24 @@ struct OverlayCanvasView: View {
     // MARK: - Text / floating label overlay
 
     private func drawText(
-        _ ctx: GraphicsContext, size: CGSize,
+        _ ctx: inout GraphicsContext, size: CGSize,
         overlay: Overlay, kpMap: [Int: CGPoint]
     ) {
         guard let anchor = kpMap[overlay.landmarks.first ?? -1],
               let label  = overlay.label else { return }
-        drawFloatingLabel(ctx, at: anchor, text: label, color: overlay.swiftUIColor)
+        drawFloatingLabel(&ctx, at: anchor, text: label, color: overlay.swiftUIColor)
     }
 
     // MARK: - Shared floating label
 
     private func drawFloatingLabel(
-        _ ctx: GraphicsContext,
+        _ ctx: inout GraphicsContext,
         at point: CGPoint,
         text: String,
         color: Color
     ) {
-        let font  = Font.system(size: 12, weight: .semibold)
-        let resolved = ctx.resolve(Text(text).font(font).foregroundColor(color))
+        let font     = Font.system(size: 12, weight: .semibold)
+        let resolved = ctx.resolve(Text(text).font(font).foregroundStyle(color))
         let textSize = resolved.measure(in: CGSize(width: 200, height: 40))
         let padding: CGFloat = 4
         let bgRect = CGRect(
