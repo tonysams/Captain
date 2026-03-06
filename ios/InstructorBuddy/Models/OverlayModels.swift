@@ -98,19 +98,3 @@ extension Overlay {
         Color(hex: color) ?? .white
     }
 }
-
-extension Color {
-    /// Initialise from a CSS hex string such as `#4A9EFF` or `#E53E3E`.
-    init?(hex: String) {
-        var h = hex.trimmingCharacters(in: .alphanumerics.inverted)
-        if h.count == 3 {
-            h = h.map { "\($0)\($0)" }.joined()
-        }
-        guard h.count == 6,
-              let value = UInt64(h, radix: 16) else { return nil }
-        let r = Double((value >> 16) & 0xFF) / 255
-        let g = Double((value >>  8) & 0xFF) / 255
-        let b = Double( value        & 0xFF) / 255
-        self.init(red: r, green: g, blue: b)
-    }
-}
