@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Experience Repository</title>
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --accent: #b5542d;
+    --accent-soft: #f3e3da;
+    --border: #e3ded4;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 2.2rem 1.5rem 1.6rem;
+    text-align: center;
+  }
+  header h1 { font-size: 1.9rem; font-weight: normal; }
+  header h1 em { color: var(--accent); }
+  header p { color: var(--muted); margin-top: .4rem; font-size: .98rem; }
+  main { max-width: 920px; margin: 0 auto; padding: 1.5rem; }
+
+  .toolbar { display: flex; gap: .7rem; flex-wrap: wrap; align-items: center; margin: .5rem 0 1rem; }
+  #search {
+    flex: 1; min-width: 240px;
+    font: inherit; font-size: 1rem;
+    padding: .65rem .9rem;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--card);
+  }
+  #search:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  select {
+    font: inherit; font-size: .95rem; padding: .6rem .7rem;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--card);
+  }
+  .btn {
+    font: inherit; font-size: .95rem; cursor: pointer;
+    padding: .6rem 1.1rem; border-radius: var(--radius);
+    border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  }
+  .btn.secondary { background: var(--card); color: var(--accent); }
+
+  #tagbar { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.2rem; }
+  .tag {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: .78rem; padding: .25rem .65rem;
+    border-radius: 999px; border: 1px solid var(--border);
+    background: var(--card); color: var(--muted); cursor: pointer;
+    user-select: none;
+  }
+  .tag.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tag.small { cursor: default; font-size: .72rem; }
+
+  #count { color: var(--muted); font-size: .9rem; margin-bottom: .8rem; font-style: italic; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.2rem 1.4rem; margin-bottom: 1rem;
+  }
+  .card .meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: .8rem; color: var(--muted); margin-bottom: .35rem;
+    display: flex; gap: .6rem; flex-wrap: wrap; align-items: center;
+  }
+  .card .meta .tool {
+    background: var(--accent-soft); color: var(--accent);
+    padding: .15rem .55rem; border-radius: 999px; font-weight: 600;
+  }
+  .card h2 { font-size: 1.15rem; font-weight: normal; margin-bottom: .3rem; }
+  .card .summary { font-style: italic; color: var(--muted); margin-bottom: .55rem; }
+  .card .story { display: none; margin: .6rem 0; white-space: pre-wrap; }
+  .card.open .story { display: block; }
+  .card .toggle {
+    font-family: 'Helvetica Neue', Arial, sans-serif; font-size: .8rem;
+    color: var(--accent); cursor: pointer; background: none; border: none; padding: 0;
+  }
+  .card .tags { margin-top: .6rem; display: flex; flex-wrap: wrap; gap: .35rem; }
+
+  /* Submission form */
+  dialog {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.8rem; max-width: 540px; width: 92%;
+  }
+  dialog::backdrop { background: rgba(40,35,25,.45); }
+  dialog h2 { font-weight: normal; margin-bottom: 1rem; }
+  dialog label {
+    display: block; font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: .82rem; color: var(--muted); margin: .8rem 0 .25rem;
+  }
+  dialog input, dialog textarea, dialog select {
+    width: 100%; font: inherit; font-size: .95rem;
+    padding: .55rem .7rem; border: 1px solid var(--border); border-radius: 6px;
+  }
+  dialog textarea { min-height: 130px; resize: vertical; }
+  .dialog-actions { display: flex; gap: .7rem; justify-content: flex-end; margin-top: 1.3rem; }
+  .notice { margin-top: .9rem; font-size: .9rem; font-style: italic; color: var(--accent); }
+
+  .empty { text-align: center; color: var(--muted); font-style: italic; padding: 3rem 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AI Experience <em>Repository</em></h1>
+  <p>How our staff and faculty actually use AI — prompts, workflows, and lessons learned.</p>
+</header>
+
+<main>
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Search stories, prompts, names&hellip;" aria-label="Search">
+    <select id="toolFilter" aria-label="Filter by tool">
+      <option value="">All tools</option>
+      <option>ChatGPT Edu</option>
+      <option>Google Gemini</option>
+      <option>NotebookLM</option>
+      <option>Claude</option>
+      <option>Microsoft Copilot</option>
+      <option>Other</option>
+    </select>
+    <button class="btn" id="openSubmit">Share your experience</button>
+  </div>
+
+  <div id="tagbar"></div>
+  <div id="count"></div>
+  <div id="results"></div>
+</main>
+
+<dialog id="submitDialog">
+  <h2>Share an AI experience</h2>
+  <form id="submitForm">
+    <label for="f-name">Your name (optional)</label>
+    <input id="f-name" name="name" autocomplete="name">
+
+    <label for="f-role">Your role</label>
+    <select id="f-role" name="role">
+      <option>Faculty</option><option>Staff</option><option>Administrator</option><option>Graduate Student</option><option>Other</option>
+    </select>
+
+    <label for="f-dept">Department / unit (optional)</label>
+    <input id="f-dept" name="department">
+
+    <label for="f-tool">Which tool? *</label>
+    <select id="f-tool" name="tool" required>
+      <option>ChatGPT Edu</option><option>Google Gemini</option><option>NotebookLM</option><option>Claude</option><option>Microsoft Copilot</option><option>Other</option>
+    </select>
+
+    <label for="f-title">Give it a short title</label>
+    <input id="f-title" name="title" placeholder="e.g., Faster literature reviews with PDF uploads">
+
+    <label for="f-story">Your experience — what did you do, how, and what happened? Include the prompt if you can. *</label>
+    <textarea id="f-story" name="story" required></textarea>
+
+    <div class="dialog-actions">
+      <button type="button" class="btn secondary" id="cancelSubmit">Cancel</button>
+      <button type="submit" class="btn">Submit</button>
+    </div>
+    <div class="notice" id="submitNotice"></div>
+  </form>
+</dialog>
+
+<script>
+// ── Configuration ───────────────────────────────────────────────────────────
+// Paste your Apps Script web app URL here after deploying the backend.
+const API_URL = 'https://script.google.com/macros/s/AKfycbzUKuExqLAbcdG_akyNZ10C-8StXfKSG_ljlE-T0AkIAnMub88dLKcUYEa9p4vIo4O-VQ/exec';
+// ────────────────────────────────────────────────────────────────────────────
+
+let entries = [];
+let activeTags = new Set();
+
+const $search = document.getElementById('search');
+const $toolFilter = document.getElementById('toolFilter');
+const $tagbar = document.getElementById('tagbar');
+const $results = document.getElementById('results');
+const $count = document.getElementById('count');
+
+async function load() {
+  if (API_URL.startsWith('PASTE_')) {
+    $results.innerHTML = '<div class="empty">Backend not connected yet — set API_URL in index.html.<br>Showing sample data so you can try the interface.</div>';
+    entries = sampleData();
+    render();
+    return;
+  }
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    entries = data.entries || [];
+  } catch (err) {
+    $results.innerHTML = '<div class="empty">Could not reach the backend. Check the API_URL and deployment settings.</div>';
+    return;
+  }
+  render();
+}
+
+function allTags() {
+  const counts = {};
+  entries.forEach(e => (e.tags || []).forEach(t => counts[t] = (counts[t] || 0) + 1));
+  return Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+}
+
+function filtered() {
+  const q = $search.value.trim().toLowerCase();
+  const tool = $toolFilter.value;
+  return entries.filter(e => {
+    if (tool && e.tool !== tool) return false;
+    if (activeTags.size && ![...activeTags].every(t => (e.tags || []).includes(t))) return false;
+    if (q) {
+      const hay = [e.title, e.story, e.summary, e.name, e.role, e.department, (e.tags || []).join(' ')].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function render() {
+  // Tag bar
+  $tagbar.innerHTML = '';
+  allTags().forEach(t => {
+    const el = document.createElement('span');
+    el.className = 'tag' + (activeTags.has(t) ? ' active' : '');
+    el.textContent = t;
+    el.onclick = () => { activeTags.has(t) ? activeTags.delete(t) : activeTags.add(t); render(); };
+    $tagbar.appendChild(el);
+  });
+
+  const list = filtered();
+  $count.textContent = list.length + ' experience' + (list.length === 1 ? '' : 's');
+
+  $results.innerHTML = '';
+  if (!list.length) {
+    $results.innerHTML = '<div class="empty">Nothing matches — try clearing a filter.</div>';
+    return;
+  }
+  list.forEach(e => {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="meta">
+        <span class="tool">${esc(e.tool)}</span>
+        <span>${esc(e.name || 'Anonymous')}${e.role ? ' · ' + esc(e.role) : ''}${e.department ? ' · ' + esc(e.department) : ''}</span>
+        <span>${esc(e.category || '')}</span>
+      </div>
+      <h2>${esc(e.title || 'Untitled')}</h2>
+      <div class="summary">${esc(e.summary || '')}</div>
+      <button class="toggle">Read full story ▾</button>
+      <div class="story">${esc(e.story)}</div>
+      <div class="tags">${(e.tags || []).map(t => '<span class="tag small">' + esc(t) + '</span>').join('')}</div>`;
+    card.querySelector('.toggle').onclick = () => {
+      card.classList.toggle('open');
+      card.querySelector('.toggle').textContent = card.classList.contains('open') ? 'Hide full story ▴' : 'Read full story ▾';
+    };
+    $results.appendChild(card);
+  });
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+$search.addEventListener('input', render);
+$toolFilter.addEventListener('change', render);
+
+// ── Submission form ─────────────────────────────────────────────────────────
+const $dialog = document.getElementById('submitDialog');
+const $form = document.getElementById('submitForm');
+const $notice = document.getElementById('submitNotice');
+
+document.getElementById('openSubmit').onclick = () => { $notice.textContent = ''; $dialog.showModal(); };
+document.getElementById('cancelSubmit').onclick = () => $dialog.close();
+
+$form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  if (API_URL.startsWith('PASTE_')) {
+    $notice.textContent = 'Backend not connected yet — submissions are disabled in preview mode.';
+    return;
+  }
+  $notice.textContent = 'Submitting…';
+  const data = Object.fromEntries(new FormData($form).entries());
+  try {
+    // text/plain avoids a CORS preflight, which Apps Script web apps can't answer.
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    const out = await res.json();
+    if (out.ok) {
+      $notice.textContent = 'Thank you! Your experience was submitted and will appear after review.';
+      $form.reset();
+      setTimeout(() => $dialog.close(), 2200);
+    } else {
+      $notice.textContent = 'Error: ' + (out.error || 'unknown');
+    }
+  } catch (err) {
+    $notice.textContent = 'Could not submit — please try again later.';
+  }
+});
+
+// ── Sample data for preview mode ────────────────────────────────────────────
+function sampleData() {
+  return [
+    { tool: 'Claude', name: 'T. Sams', role: 'Faculty', department: 'Education', category: 'Teaching',
+      title: 'Drafting rubrics from learning objectives',
+      summary: 'Pastes course learning objectives into Claude and asks for a draft rubric, then refines criteria by hand.',
+      story: 'I paste my course learning objectives and ask: "Create a 4-level analytic rubric aligned to these objectives, with observable criteria for each level." It gives me a solid first draft in seconds, and I spend my time refining instead of staring at a blank page.',
+      tags: ['teaching', 'assessment', 'course-design'] },
+    { tool: 'NotebookLM', name: 'Anonymous', role: 'Staff', department: 'Library', category: 'Research',
+      title: 'Audio overviews of policy documents',
+      summary: 'Uploads long policy PDFs into NotebookLM and generates audio overviews to absorb them during a commute.',
+      story: 'Our accreditation documents are hundreds of pages. I load them into NotebookLM, generate the audio overview, and listen on my commute. Then I use the chat to pull exact citations when I need to quote a section.',
+      tags: ['summarization', 'policy', 'administrative'] },
+    { tool: 'ChatGPT Edu', name: 'M. Rivera', role: 'Graduate Student', department: 'Biology', category: 'Research',
+      title: 'Cleaning messy field data',
+      summary: 'Uses ChatGPT Edu to write R scripts that standardize inconsistent field-collected spreadsheet data.',
+      story: 'My field data had inconsistent date formats and species name typos. I described the mess and asked for an R script using dplyr to standardize everything, with comments explaining each step so I could learn from it.',
+      tags: ['data-analysis', 'coding', 'research'] },
+    { tool: 'Google Gemini', name: 'D. Okafor', role: 'Staff', department: 'Advising', category: 'Student Support',
+      title: 'First drafts of student outreach emails',
+      summary: 'Drafts personalized-feeling outreach emails to at-risk students, then edits for voice before sending.',
+      story: 'I give Gemini the situation — "student missed two advising appointments, midterm grades slipping" — and ask for a warm, non-judgmental check-in email. I always rewrite parts in my own voice, but it gets me past the hardest part: starting.',
+      tags: ['email-drafting', 'advising', 'student-support'] }
+  ];
+}
+
+load();
+</script>
+</body>
+</html>
