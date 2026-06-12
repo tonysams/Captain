@@ -2,7 +2,7 @@
  * AI Experience Repository — Google Apps Script backend
  *
  * Bound to a Google Sheet with a tab named "Submissions" and this header row:
- * Timestamp | Name | Email | Role | Department | Tool | Title | Story | Status | Tags | Summary | Category
+ * Timestamp | Name | Email | Role | Department | Tool | Title | Story | Status | Tags | Summary | Category | Type
  *
  * Status lifecycle: NEW -> TAGGED (by the curation agent) -> APPROVED (by you) -> visible on the site
  *
@@ -16,8 +16,10 @@ var SHEET_NAME = 'Submissions';
 
 var COL = {
   TIMESTAMP: 1, NAME: 2, EMAIL: 3, ROLE: 4, DEPARTMENT: 5, TOOL: 6,
-  TITLE: 7, STORY: 8, STATUS: 9, TAGS: 10, SUMMARY: 11, CATEGORY: 12
+  TITLE: 7, STORY: 8, STATUS: 9, TAGS: 10, SUMMARY: 11, CATEGORY: 12, TYPE: 13
 };
+
+var ENTRY_TYPES = ['Prompt template', 'Experience story'];
 
 // Controlled vocabulary the agent tags against. Edit freely — the agent
 // will only use tags from this list, which keeps the filter UI clean.
@@ -55,7 +57,8 @@ function doGet(e) {
       story: r[COL.STORY - 1],
       tags: String(r[COL.TAGS - 1]).split(',').map(function (t) { return t.trim(); }).filter(String),
       summary: r[COL.SUMMARY - 1],
-      category: r[COL.CATEGORY - 1]
+      category: r[COL.CATEGORY - 1],
+      type: r[COL.TYPE - 1] || ''
     });
   }
 
@@ -87,7 +90,8 @@ function doPost(e) {
     data.tool,
     data.title || '',
     data.story,
-    'NEW', '', '', ''
+    'NEW', '', '', '',
+    ENTRY_TYPES.indexOf(data.type) !== -1 ? data.type : 'Experience story'
   ]);
 
   return jsonResponse({ ok: true });
