@@ -79,6 +79,10 @@
     background: var(--accent-soft); color: var(--accent);
     padding: .15rem .55rem; border-radius: 999px; font-weight: 600;
   }
+  .card .meta .type-badge {
+    border: 1px solid var(--border); color: var(--muted);
+    padding: .15rem .55rem; border-radius: 999px;
+  }
   .card h2 { font-size: 1.15rem; font-weight: normal; margin-bottom: .3rem; }
   .card .summary { font-style: italic; color: var(--muted); margin-bottom: .55rem; }
   .card .story { display: none; margin: .6rem 0; white-space: pre-wrap; }
@@ -121,6 +125,11 @@
 <main>
   <div class="toolbar">
     <input id="search" type="search" placeholder="Search stories, prompts, names&hellip;" aria-label="Search">
+    <select id="typeFilter" aria-label="Filter by type">
+      <option value="">All types</option>
+      <option>Prompt template</option>
+      <option>Experience story</option>
+    </select>
     <select id="toolFilter" aria-label="Filter by tool">
       <option value="">All tools</option>
       <option>ChatGPT Edu</option>
@@ -152,6 +161,12 @@
     <label for="f-dept">Department / unit (optional)</label>
     <input id="f-dept" name="department">
 
+    <label for="f-type">What are you sharing?</label>
+    <select id="f-type" name="type">
+      <option>Experience story</option>
+      <option>Prompt template</option>
+    </select>
+
     <label for="f-tool">Which tool? *</label>
     <select id="f-tool" name="tool" required>
       <option>ChatGPT Edu</option><option>Google Gemini</option><option>NotebookLM</option><option>Claude</option><option>Microsoft Copilot</option><option>Other</option>
@@ -182,6 +197,7 @@ let activeTags = new Set();
 
 const $search = document.getElementById('search');
 const $toolFilter = document.getElementById('toolFilter');
+const $typeFilter = document.getElementById('typeFilter');
 const $tagbar = document.getElementById('tagbar');
 const $results = document.getElementById('results');
 const $count = document.getElementById('count');
@@ -213,8 +229,10 @@ function allTags() {
 function filtered() {
   const q = $search.value.trim().toLowerCase();
   const tool = $toolFilter.value;
+  const type = $typeFilter.value;
   return entries.filter(e => {
     if (tool && e.tool !== tool) return false;
+    if (type && e.type !== type) return false;
     if (activeTags.size && ![...activeTags].every(t => (e.tags || []).includes(t))) return false;
     if (q) {
       const hay = [e.title, e.story, e.summary, e.name, e.role, e.department, (e.tags || []).join(' ')].join(' ').toLowerCase();
@@ -249,6 +267,7 @@ function render() {
     card.innerHTML = `
       <div class="meta">
         <span class="tool">${esc(e.tool)}</span>
+        ${e.type ? '<span class="type-badge">' + esc(e.type) + '</span>' : ''}
         <span>${esc(e.name || 'Anonymous')}${e.role ? ' · ' + esc(e.role) : ''}${e.department ? ' · ' + esc(e.department) : ''}</span>
         <span>${esc(e.category || '')}</span>
       </div>
@@ -271,6 +290,7 @@ function esc(s) {
 
 $search.addEventListener('input', render);
 $toolFilter.addEventListener('change', render);
+$typeFilter.addEventListener('change', render);
 
 // ── Submission form ─────────────────────────────────────────────────────────
 const $dialog = document.getElementById('submitDialog');
