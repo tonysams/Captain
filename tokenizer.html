@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basic Tokenizer</title>
+<style>
+  * { box-sizing: border-box; }
+
+  :root {
+    --ink: #1a1714;
+    --paper: #f7f4ef;
+    --warm-mid: #e8e0d4;
+    --accent: #c4692a;
+    --muted: #7a6f65;
+    --white: #fdfcfa;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+
+  main {
+    width: 100%;
+    max-width: 760px;
+  }
+
+  h1 {
+    font-size: 1.8em;
+    margin-bottom: 4px;
+  }
+
+  p.intro {
+    color: var(--muted);
+    margin-top: 0;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 140px;
+    padding: 14px;
+    font-size: 1em;
+    font-family: inherit;
+    border: 1px solid var(--warm-mid);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--ink);
+    resize: vertical;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin: 14px 0 24px;
+  }
+
+  .controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95em;
+  }
+
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .stat {
+    background: var(--white);
+    border: 1px solid var(--warm-mid);
+    border-radius: 8px;
+    padding: 10px 16px;
+    min-width: 100px;
+  }
+
+  .stat .value {
+    font-size: 1.5em;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .stat .label {
+    font-size: 0.8em;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  h2 {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+  }
+
+  .tokens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 14px;
+    border: 1px solid var(--warm-mid);
+    border-radius: 8px;
+    background: var(--white);
+    min-height: 48px;
+    margin-bottom: 32px;
+  }
+
+  .token {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.95em;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  .token .idx {
+    font-size: 0.7em;
+    opacity: 0.6;
+  }
+
+  .token.space {
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .empty-msg {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.85em;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  footer a {
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Basic Tokenizer</h1>
+  <p class="intro">
+    Type or paste some text below. It gets cut into tokens — the small pieces
+    a language model actually reads — right in front of you, each one colored
+    so you can see where one ends and the next begins.
+  </p>
+
+  <textarea id="inputText" placeholder="Type something here...">The quick-brown fox jumps over 12 lazy dogs! Isn't that something?</textarea>
+
+  <div class="controls">
+    <label>
+      <input type="radio" name="mode" value="word" checked>
+      Word &amp; punctuation
+    </label>
+    <label>
+      <input type="radio" name="mode" value="char">
+      Character
+    </label>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="value" id="tokenCount">0</div>
+      <div class="label">Tokens</div>
+    </div>
+    <div class="stat">
+      <div class="value" id="uniqueCount">0</div>
+      <div class="label">Unique</div>
+    </div>
+    <div class="stat">
+      <div class="value" id="charCount">0</div>
+      <div class="label">Characters</div>
+    </div>
+    <div class="stat">
+      <div class="value" id="avgLen">0</div>
+      <div class="label">Avg chars/token</div>
+    </div>
+  </div>
+
+  <h2>Tokens</h2>
+  <div class="tokens" id="tokenDisplay"></div>
+
+  <footer>A basic, rule-based tokenizer for learning &mdash; not the algorithm real LLMs use (they use subword schemes like BPE), but the same idea: text in, pieces out.</footer>
+</main>
+
+<script>
+(function () {
+  const inputText = document.getElementById('inputText');
+  const tokenDisplay = document.getElementById('tokenDisplay');
+  const tokenCountEl = document.getElementById('tokenCount');
+  const uniqueCountEl = document.getElementById('uniqueCount');
+  const charCountEl = document.getElementById('charCount');
+  const avgLenEl = document.getElementById('avgLen');
+  const modeRadios = document.querySelectorAll('input[name="mode"]');
+
+  const PALETTE = [
+    '#f0e4d8', '#dceaf2', '#e3f0e0', '#f2e3ec',
+    '#fbe8cf', '#e6e0f2', '#dff2ee', '#f2ded9'
+  ];
+
+  // Splits text into words, numbers, punctuation runs, and whitespace runs,
+  // keeping every character accounted for so the tokens can be joined back
+  // into the exact original string.
+  const WORD_TOKEN_PATTERN = /[A-Za-z]+(?:'[A-Za-z]+)*|\d+(?:\.\d+)?|\s+|[^\sA-Za-z\d]+/g;
+
+  function tokenizeWords(text) {
+    return text.match(WORD_TOKEN_PATTERN) || [];
+  }
+
+  function tokenizeChars(text) {
+    return Array.from(text);
+  }
+
+  function currentMode() {
+    return document.querySelector('input[name="mode"]:checked').value;
+  }
+
+  function render() {
+    const text = inputText.value;
+    const mode = currentMode();
+    const tokens = mode === 'char' ? tokenizeChars(text) : tokenizeWords(text);
+
+    tokenDisplay.innerHTML = '';
+
+    if (tokens.length === 0) {
+      const empty = document.createElement('span');
+      empty.className = 'empty-msg';
+      empty.textContent = 'Nothing to tokenize yet.';
+      tokenDisplay.appendChild(empty);
+    } else {
+      tokens.forEach((tok, i) => {
+        const span = document.createElement('span');
+        const isSpace = /^\s+$/.test(tok);
+        span.className = 'token' + (isSpace ? ' space' : '');
+        if (!isSpace) {
+          span.style.background = PALETTE[i % PALETTE.length];
+        }
+
+        const idx = document.createElement('span');
+        idx.className = 'idx';
+        idx.textContent = i;
+
+        const body = document.createElement('span');
+        body.textContent = isSpace ? tok.replace(/ /g, '·').replace(/\n/g, '↵\n') : tok;
+
+        span.appendChild(idx);
+        span.appendChild(body);
+        tokenDisplay.appendChild(span);
+      });
+    }
+
+    const nonSpaceTokens = tokens.filter(t => !/^\s+$/.test(t));
+    const uniqueTokens = new Set(mode === 'char' ? tokens : nonSpaceTokens);
+    const totalChars = tokens.reduce((sum, t) => sum + t.length, 0);
+    const avg = tokens.length ? (totalChars / tokens.length) : 0;
+
+    tokenCountEl.textContent = tokens.length;
+    uniqueCountEl.textContent = uniqueTokens.size;
+    charCountEl.textContent = text.length;
+    avgLenEl.textContent = avg.toFixed(1);
+  }
+
+  inputText.addEventListener('input', render);
+  modeRadios.forEach(r => r.addEventListener('change', render));
+
+  render();
+})();
+</script>
+</body>
+</html>
